@@ -5,6 +5,8 @@ import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import VideoCall from '@/components/VideoCall';
+import IncomingCall from '@/components/IncomingCall';
 
 interface Chat {
   id: number;
@@ -29,6 +31,26 @@ const Index = () => {
   const [activeView, setActiveView] = useState<'chats' | 'contacts' | 'settings' | 'profile' | 'archive'>('chats');
   const [selectedChat, setSelectedChat] = useState<number | null>(1);
   const [messageText, setMessageText] = useState('');
+  const [callState, setCallState] = useState<'none' | 'incoming' | 'active'>('none');
+  const [callType, setCallType] = useState<'voice' | 'video'>('voice');
+
+  const startCall = (type: 'voice' | 'video') => {
+    setCallType(type);
+    setCallState('active');
+  };
+
+  const handleIncomingCall = (type: 'voice' | 'video') => {
+    setCallType(type);
+    setCallState('incoming');
+  };
+
+  const acceptCall = () => {
+    setCallState('active');
+  };
+
+  const endCall = () => {
+    setCallState('none');
+  };
 
   const chats: Chat[] = [
     { id: 1, name: 'Анна Иванова', avatar: '', lastMessage: 'Привет! Как дела?', time: '14:32', unread: 3, online: true },
@@ -55,7 +77,27 @@ const Index = () => {
   ];
 
   return (
-    <div className="flex h-screen overflow-hidden bg-background">
+    <>
+      {callState === 'incoming' && (
+        <IncomingCall
+          contactName="Анна Иванова"
+          contactInitials="АИ"
+          isVideo={callType === 'video'}
+          onAccept={acceptCall}
+          onDecline={endCall}
+        />
+      )}
+
+      {callState === 'active' && (
+        <VideoCall
+          contactName="Анна Иванова"
+          contactInitials="АИ"
+          isVideo={callType === 'video'}
+          onEndCall={endCall}
+        />
+      )}
+
+      <div className="flex h-screen overflow-hidden bg-background">
       <div className="w-20 bg-sidebar border-r border-sidebar-border flex flex-col items-center py-6 gap-6">
         <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-4 animate-scale-in">
           <Icon name="MessageSquare" size={24} className="text-white" />
@@ -168,10 +210,20 @@ const Index = () => {
               </div>
               
               <div className="flex items-center gap-2">
-                <Button size="icon" variant="ghost" className="rounded-xl hover:scale-110 transition-all hover:bg-accent hover:text-accent-foreground">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={() => startCall('voice')}
+                  className="rounded-xl hover:scale-110 transition-all hover:bg-accent hover:text-accent-foreground"
+                >
                   <Icon name="Phone" size={20} />
                 </Button>
-                <Button size="icon" variant="ghost" className="rounded-xl hover:scale-110 transition-all hover:bg-accent hover:text-accent-foreground">
+                <Button 
+                  size="icon" 
+                  variant="ghost" 
+                  onClick={() => startCall('video')}
+                  className="rounded-xl hover:scale-110 transition-all hover:bg-accent hover:text-accent-foreground"
+                >
                   <Icon name="Video" size={20} />
                 </Button>
                 <Button size="icon" variant="ghost" className="rounded-xl hover:scale-110 transition-all">
@@ -292,7 +344,8 @@ const Index = () => {
           </div>
         )}
       </div>
-    </div>
+      </div>
+    </>
   );
 };
 
